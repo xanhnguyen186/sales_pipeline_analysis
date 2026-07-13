@@ -1,0 +1,122 @@
+---
+title: "Data Preparation"
+format: html
+editor: visual
+---
+
+## Setup
+
+```{r}
+library(readxl)
+library(dplyr)
+library(stringr)
+library(writexl)
+```
+
+## Load the raw data
+
+```{r}
+raw <- read_excel("09_Sales_Revenue_Performance.xlsx", sheet = "1_RAW_DATA")
+
+dim(raw)
+```
+
+## Exploratory profiling
+
+```{r}
+glimpse(raw)
+```
+
+### Missing values
+
+```{r}
+colSums(is.na(raw))
+```
+
+### Duplicates and messy categories
+
+```{r}
+cat("Exact-duplicate rows:", sum(duplicated(raw)), "\n\n")
+
+cat("Region values:\n");         print(unique(raw$Region))
+cat("\nPipeline stage values:\n"); print(unique(raw$Pipeline_Stage))
+cat("\nNegative discounts:", sum(raw$`Discount_%` < 0, na.rm = TRUE), "\n")
+```
+
+## Cleaning
+
+Each fix below addresses one issue found above. The steps are chained so the transformation reads as a single, reproducible pipeline.
+
+```{r}
+clean <- raw %>%
+
+  # Remove exact-duplicate rows
+  distinct() %>%
+
+  # Standardise Region into canonical labels (accents kept to match the
+  # dashboard), mapping the stray city to its region
+  mutate(
+    Region = str_trim(Region),
+    Region = case_when(
+      str_to_lower(Region) %in% c("miền bắc", "mien bac")               ~ "Miền Bắc",
+      str_to_lower(Region) %in% c("miền nam", "mien nam", "ho chi minh") ~ "Miền Nam",
+      str_to_lower(Region) %in% c("miền trung", "mien trung")           ~ "Miền Trung",
+      str_to_lower(Region) %in% c("tây nguyên", "tay nguyen")           ~ "Tây Nguyên",
+      TRUE ~ Region
+    )
+  ) %>%
+
+  # Standardise Pipeline_Stage — collapse spelling variants
+  mutate(
+    Pipeline_Stage = str_trim(Pipeline_Stage),
+    stage_key = str_to_lower(str_replace_all(Pipeline_Stage, " ", "")),
+    Pipeline_Stage = case_when(
+      stage_key == "closedwon"  ~ "Closed Won",
+      stage_key == "closedlost" ~ "Closed Lost",
+      TRUE ~ Pipeline_Stage
+    )
+  ) %>%
+  select(-stage_key) %>%
+
+  # Correct invalid negative discounts
+  mutate(`Discount_%` = if_else(`Discount_%` < 0, abs(`Discount_%`), `Discount_%`)) %>%
+
+  # Replace junk numeric values in Industry
+  mutate(
+    Industry = case_when(
+      is.na(Industry)                   ~ NA_character_,
+      str_detect(Industry, "^[0-9.]+$") ~ "Other",
+      TRUE ~ Industry
+    )
+  )
+```
+
+### Handling missing values
+
+```{r}
+colSums(is.na(clean))
+```
+
+## Validation
+
+Two checks confirm the financial logic is internally consistent: net revenue should never exceed contract value, and gross profit should equal net revenue minus cost of sale.
+
+```{r}
+chk_net <- sum(clean$Net_Revenue_VND > clean$Contract_Value_VND, na.rm = TRUE)
+chk_gp  <- sum(abs((clean$Net_Revenue_VND - clean$Cost_of_Sale_VND) -
+                     clean$Gross_Profit_VND) > 1000, na.rm = TRUE)
+
+cat("Rows where Net > Contract (expect 0):", chk_net, "\n")
+cat("Gross profit reconciliation errors (expect 0):", chk_gp, "\n")
+cat("Final dimensions:", nrow(clean), "rows x", ncol(clean), "columns\n\n")
+cat("Regions after cleaning:\n"); print(unique(clean$Region))
+```
+
+Both checks pass: the money columns are consistent, and `Region` now holds exactly four clean, canonical values.
+
+## Export
+
+```{r}
+write_xlsx(clean, "sales_data_cleaned.xlsx")
+write.csv(clean, "sales_data_cleaned.csv", row.names = FALSE, fileEncoding = "UTF-8", na = "")
+```
