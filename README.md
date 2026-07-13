@@ -1,7 +1,6 @@
-
 # Sales Pipeline & Deal Performance Analytics
 
-An end-to-end analytics project that turns a raw B2B sales pipeline export into a decision-ready Power BI dashboard, a findings report, and an executive presentation — covering the full workflow from data cleaning in R to SQL analysis in PostgreSQL to visualization and storytelling.
+An end-to-end analytics project that turns a raw B2B sales pipeline export into a decision-ready Power BI dashboard and a findings report — covering the full workflow from data cleaning in R to SQL analysis in PostgreSQL to visualization and storytelling.
 
 ---
 
@@ -9,7 +8,22 @@ An end-to-end analytics project that turns a raw B2B sales pipeline export into 
 
 A Vietnamese B2B software company wanted to understand its FY2024 sales performance: **how it performed, why deals were won or lost, and what the pipeline outlook looked like.**
 
-This project answers those questions through a Descriptive → Diagnostic → Predictive analysis, delivered as a three-page interactive dashboard supported by a written report and a slide deck. The emphasis is on turning raw pipeline data into clear, defensible business insight — not just charts.
+This project answers those questions through a Descriptive → Diagnostic → Predictive analysis, delivered as a three-page interactive dashboard supported by a written report. The emphasis is on turning raw pipeline data into clear, defensible business insight — not just charts.
+
+---
+
+## Dashboard Preview
+
+📄 **[View the full dashboard (PDF)](Sales Revenue Performance.pdf)** — all three pages. For the interactive version, open `Sales Revenue Performance.pbix` in Power BI Desktop.
+
+**Page 1 — Overview**
+![Overview](overview.png)
+
+**Page 2 — Loss Analysis**
+![Loss Analysis](loss_analysis.png)
+
+**Page 3 — Predictive Analysis**
+![Predictive Analysis](predictive.png)
 
 ---
 
@@ -33,7 +47,6 @@ Key feature groups: deal financials (contract value, discount, net revenue, cost
 | Data storage & querying | PostgreSQL (SQL) |
 | Dashboard & measures | Power BI (DAX) |
 | Report | Markdown |
-| Presentation | Gamma |
 
 ---
 
@@ -44,7 +57,6 @@ Key feature groups: deal financials (contract value, discount, net revenue, cost
 3. **Query (PostgreSQL)** — loaded the cleaned data into PostgreSQL and wrote aggregation queries answering the core business questions (win rate by region/rep, revenue by product, discount vs win rate, pipeline funnel, weighted vs open pipeline).
 4. **Visualise (Power BI)** — connected the query-ready data to Power BI and built a three-page dashboard, with key metrics implemented as DAX measures.
 5. **Report** — summarised the findings and recommendations in a concise written report.
-6. **Present (Gamma)** — packaged the story into an executive slide deck for stakeholders.
 
 ---
 
@@ -80,7 +92,7 @@ These translated into concrete recommendations: fix qualification rather than pr
 2. **Explore & clean** — open the R script in RStudio and run it to generate the cleaned dataset.
 3. **Load to PostgreSQL** — import the cleaned data and run the SQL query script.
 4. **Open the dashboard** — open the Power BI (`.pbix`) file in Power BI Desktop.
-5. **View the report & deck** — the findings report and presentation are included in the files.
+5. **View the report** — the findings report is included in the files.
 
 ---
 
